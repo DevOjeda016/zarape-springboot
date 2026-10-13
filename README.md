@@ -13,6 +13,20 @@ mvn test
 ```
 API en `http://localhost:8080/api`. Front: repo `zarape-react` (CORS permite `http://localhost:5173`, configurable con `CORS_ORIGINS`).
 
+## Desarrollo con Docker (MySQL + API + front)
+Solo para desarrollo. Requiere Docker con Compose y los repos clonados lado a lado (`zarape-springboot` y `zarape-react`).
+```bash
+./dev.sh up        # primer plano; ./dev.sh bg para segundo plano
+./dev.sh logs api  # logs de un servicio (db, api, web)
+./dev.sh restart   # reinicia la API para recargar cambios de Java
+./dev.sh down      # detiene (conserva la BD); ./dev.sh reset borra también la BD
+```
+Sin `dev.sh` (p. ej. en Windows): `docker compose -f docker-compose.dev.yml up --build`.
+
+- Front: http://localhost:5173 · API: http://localhost:8080/api · MySQL: `localhost:3307` (usuario `root`, contraseña `dev`).
+- El código se monta como volumen: el front recarga solo; la API necesita `./dev.sh restart` tras cambios.
+- La primera vez tarda porque descarga dependencias de Maven y npm (quedan cacheadas en volúmenes).
+
 ## Usuarios de demo (solo desarrollo)
 | Usuario | Contraseña | Rol |
 |---|---|---|

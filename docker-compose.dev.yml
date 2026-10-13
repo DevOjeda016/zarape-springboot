@@ -1,0 +1,61 @@
+# Entorno de DESARROLLO: MySQL + API (Spring Boot) + front (React/Vite).
+# Requiere los repos lado a lado:  ./zarape-springboot  y  ../zarape-react
+# Uso: ./dev.sh up   (ver ./dev.sh help)
+name: elzarape-dev
+
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: dev
+      MYSQL_DATABASE: elzarape
+    ports:
+      - "3307:3306"   # 3307 en el host para no chocar con un MySQL local
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pdev"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: mysql
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: elzarape
+      DB_USER: root
+      DB_PASSWORD: dev
+      CORS_ORIGINS: http://localhost:5173
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - m2-cache:/root/.m2
+
+  web:
+    build:
+      context: ../zarape-react
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - api
+    environment:
+      # Lo consume el navegador, por eso apunta al puerto publicado en el host.
+      VITE_API_URL: http://localhost:8080/api
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../zarape-react:/app
+      - web-node-modules:/app/node_modules
+
+volumes:
+  db-data:
+  m2-cache:
+  web-node-modules:

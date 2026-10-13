@@ -1,0 +1,6 @@
+# Imagen de DESARROLLO de la API (no usar en producción).
+FROM maven:3.9-eclipse-temurin-17
+WORKDIR /app
+# El código se monta como volumen desde docker-compose; las dependencias se cachean en el volumen de ~/.m2.
+EXPOSE 8080
+CMD ["mvn", "spring-boot:run"]
